@@ -1,0 +1,18 @@
+title: KoriRemover
+description: Aplicación web para remover fondos de imágenes con IA
+baseurl: ""
+url: "https://runeimport.github.io"
+
+# Jekyll configuration
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Include and exclude
+include:
+  - index.html
+  - README.md
+
+exclude:
+  - node_modules
+  - vendor
