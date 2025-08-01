@@ -1,6 +1,6 @@
 title: KoriRemover
 description: Aplicación web para remover fondos de imágenes con IA
-baseurl: ""
+baseurl: "/KoriRemover"
 url: "https://runeimport.github.io"
 
 # Jekyll configuration
