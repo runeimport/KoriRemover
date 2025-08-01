@@ -1,6 +1,22 @@
 # 🌐 KoriRemover - Guía de Despliegue
 
-## 🚀 Opciones de Despliegue
+## � GitHub Pages (Demo Estático)
+
+**URL del Demo**: https://runeimport.github.io/KoriRemover
+
+### ✅ Ya configurado automáticamente:
+- GitHub Actions configurado (`.github/workflows/deploy-pages.yml`)
+- Demo estático en `/docs/index.html`
+- Se despliega automáticamente en cada push a `main`
+
+### 📋 Lo que incluye el demo:
+- ✅ Interfaz completa de usuario
+- ✅ Drag & drop de archivos
+- ✅ Vista previa de imágenes
+- ✅ Simulación de procesamiento
+- ✅ Enlaces a instalación completa
+
+## 🚀 Aplicación Completa (Con IA)
 
 ### 1. Render (Recomendado - Gratis)
 

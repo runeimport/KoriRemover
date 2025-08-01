@@ -55,9 +55,16 @@ python app_basic.py
 
 5. Descarga tu imagen procesada o compárala con la original
 
-### Despliegue en Producción
+## 🌐 Demos y Despliegue
 
-La aplicación está configurada para desplegarse en:
+### GitHub Pages (Demo Estático)
+- **Demo en línea**: https://runeimport.github.io/KoriRemover
+- Interfaz de usuario completa
+- Simulación de funcionalidad
+- Enlaces a instalación completa
+
+### Aplicación Completa (Con IA)
+Para remoción real de fondos con IA, despliega en:
 - **Render**: render.com (Recomendado)
 - **Railway**: railway.app  
 - **Vercel**: vercel.com
