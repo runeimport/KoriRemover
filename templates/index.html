@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KoriRemover - Removedor de Fondos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .drag-drop-area {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 50px;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .drag-drop-area:hover {
+            background-color: #e9ecef;
+            border-color: #0056b3;
+        }
+        
+        .drag-drop-area.dragover {
+            background-color: #cce5ff;
+            border-color: #0056b3;
+        }
+        
+        .image-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .processing-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 10;
+        }
+        
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .btn-group-vertical .btn {
+            margin-bottom: 5px;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+        }
+        
+        .image-container {
+            position: relative;
+        }
+        
+        .upload-progress {
+            display: none;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="fas fa-magic"></i> KoriRemover
+                    </h1>
+                    <p class="lead mb-4">
+                        Remueve el fondo de tus imágenes de forma automática y profesional
+                    </p>
+                    <div class="row mt-5">
+                        <div class="col-md-4">
+                            <i class="fas fa-upload feature-icon"></i>
+                            <h5>Sube tu imagen</h5>
+                            <p>Arrastra y suelta o selecciona tus archivos</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-cut feature-icon"></i>
+                            <h5>Procesamiento automático</h5>
+                            <p>IA avanzada remueve el fondo automáticamente</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-download feature-icon"></i>
+                            <h5>Descarga el resultado</h5>
+                            <p>Obtén tu imagen con fondo transparente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-cloud-upload-alt"></i> Subir Nueva Imagen
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="drag-drop-area" id="dragDropArea">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                            <h4>Arrastra y suelta tu imagen aquí</h4>
+                            <p class="text-muted mb-3">o haz clic para seleccionar un archivo</p>
+                            <input type="file" id="fileInput" class="d-none" accept="image/*">
+                            <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Seleccionar Archivo
+                            </button>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    Formatos soportados: PNG, JPG, JPEG, GIF, BMP, WEBP (Máx. 16MB)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="upload-progress mt-3">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Subiendo archivo...</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images Grid -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>
+                        <i class="fas fa-images"></i> Mis Imágenes
+                        <span class="badge bg-secondary" id="imageCount">{{ images|length }}</span>
+                    </h3>
+                    <button class="btn btn-outline-primary" onclick="refreshImages()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+                
+                <div class="row" id="imagesGrid">
+                    {% for image in images %}
+                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4" data-image-id="{{ image.id }}">
+                        <div class="card image-card h-100">
+                            <div class="image-container">
+                                <img src="/download/{{ image.original_name }}" 
+                                     class="image-preview" 
+                                     alt="{{ image.original_name }}"
+                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVycm9yIGFsIGNhcmdhciBpbWFnZW48L3RleHQ+PC9zdmc+'">
+                                
+                                {% if image.processed_name %}
+                                    <span class="badge bg-success status-badge">
+                                        <i class="fas fa-check"></i> Procesado
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning status-badge">
+                                        <i class="fas fa-clock"></i> Pendiente
+                                    </span>
+                                {% endif %}
+                                
+                                <div class="processing-overlay d-none" id="processing-{{ image.id }}">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-light mb-2" role="status"></div>
+                                        <div>Procesando...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate" title="{{ image.original_name }}">
+                                    {{ image.original_name }}
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> {{ image.upload_time }}
+                                </small>
+                                
+                                <div class="btn-group-vertical w-100 mt-3">
+                                    {% if not image.processed_name %}
+                                        <button class="btn btn-primary btn-sm" 
+                                                onclick="processImage('{{ image.original_name }}', '{{ image.id }}')">
+                                            <i class="fas fa-magic"></i> Procesar
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-success btn-sm" 
+                                                onclick="downloadImage('{{ image.original_name }}')">
+                                            <i class="fas fa-download"></i> Original
+                                        </button>
+                                        {% if image.processed_name %}
+                                            <button class="btn btn-success btn-sm" 
+                                                    onclick="downloadImage('{{ image.processed_name }}')">
+                                                <i class="fas fa-download"></i> Sin Fondo
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if image.processed_name %}
+                                        <button class="btn btn-info btn-sm" 
+                                                onclick="showComparison('{{ image.original_name }}', '{{ image.processed_name }}')">
+                                            <i class="fas fa-eye"></i> Comparar
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <button class="btn btn-outline-danger btn-sm" 
+                                            onclick="deleteImage('{{ image.original_name }}')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if not images %}
+                <div class="text-center py-5">
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay imágenes aún</h4>
+                    <p class="text-muted">Sube tu primera imagen para empezar</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div class="modal fade" id="comparisonModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Comparación: Original vs Sin Fondo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-center">Original</h6>
+                            <img id="originalImage" class="img-fluid w-100" style="max-height: 400px; object-fit: contain;">
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-center">Sin Fondo</h6>
+                            <div style="background: repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 20px 20px;">
+                                <img id="processedImage" class="img-fluid w-100" style="max-height: 400px; object-fit: contain;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">KoriRemover</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const dragDropArea = document.getElementById('dragDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadProgress = document.querySelector('.upload-progress');
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Drag and drop functionality
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('dragover');
+        });
+
+        dragDropArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('dragover');
+        });
+
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        dragDropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        function handleFileUpload(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            uploadProgress.style.display = 'block';
+            progressBar.style.width = '30%';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    uploadProgress.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    
+                    if (data.success) {
+                        showToast('Imagen subida exitosamente', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('Error: ' + data.error, 'error');
+                    }
+                }, 500);
+            })
+            .catch(error => {
+                uploadProgress.style.display = 'none';
+                progressBar.style.width = '0%';
+                showToast('Error al subir el archivo', 'error');
+            });
+        }
+
+        function processImage(filename, imageId) {
+            const overlay = document.getElementById('processing-' + imageId);
+            overlay.classList.remove('d-none');
+
+            fetch('/process/' + filename)
+            .then(response => response.json())
+            .then(data => {
+                overlay.classList.add('d-none');
+                
+                if (data.success) {
+                    showToast('Imagen procesada exitosamente', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                overlay.classList.add('d-none');
+                showToast('Error al procesar la imagen', 'error');
+            });
+        }
+
+        function downloadImage(filename) {
+            window.open('/download/' + filename, '_blank');
+        }
+
+        function deleteImage(filename) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+                fetch('/delete/' + filename)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Imagen eliminada exitosamente', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showToast('Error: ' + data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showToast('Error al eliminar la imagen', 'error');
+                });
+            }
+        }
+
+        function showComparison(originalName, processedName) {
+            const modal = new bootstrap.Modal(document.getElementById('comparisonModal'));
+            document.getElementById('originalImage').src = '/download/' + originalName;
+            document.getElementById('processedImage').src = '/download/' + processedName;
+            modal.show();
+        }
+
+        function refreshImages() {
+            location.reload();
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            const toastBody = toast.querySelector('.toast-body');
+            const toastHeader = toast.querySelector('.toast-header');
+            
+            toastBody.textContent = message;
+            
+            // Remove existing classes
+            toast.classList.remove('text-bg-success', 'text-bg-danger');
+            
+            // Add appropriate class
+            if (type === 'success') {
+                toast.classList.add('text-bg-success');
+            } else {
+                toast.classList.add('text-bg-danger');
+            }
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    </script>
+</body>
+</html>
