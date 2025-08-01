@@ -240,11 +240,16 @@ if __name__ == '__main__':
     print("⏹️  Presiona Ctrl+C para detener el servidor")
     print()
     
+    # Configuración para producción y desarrollo
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
     try:
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=debug, host='0.0.0.0', port=port)
     except KeyboardInterrupt:
         print("\n👋 Servidor detenido por el usuario")
     except Exception as e:
         logger.error(f"Error iniciando el servidor: {e}")
         print(f"❌ Error: {e}")
-        input("Presiona Enter para continuar...")
+        if not os.environ.get('PORT'):  # Solo en desarrollo local
+            input("Presiona Enter para continuar...")

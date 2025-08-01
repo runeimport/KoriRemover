@@ -41,9 +41,10 @@ pip install -r requirements.txt
 
 ## Uso
 
+### Desarrollo Local
 1. Ejecuta la aplicación:
 ```bash
-python app.py
+python app_basic.py
 ```
 
 2. Abre tu navegador web y ve a `http://localhost:5000`
@@ -53,6 +54,16 @@ python app.py
 4. Haz clic en "Procesar" para remover el fondo
 
 5. Descarga tu imagen procesada o compárala con la original
+
+### Despliegue en Producción
+
+La aplicación está configurada para desplegarse en:
+- **Render**: render.com (Recomendado)
+- **Railway**: railway.app  
+- **Vercel**: vercel.com
+- **PythonAnywhere**: pythonanywhere.com
+
+Ver [DEPLOYMENT.md](DEPLOYMENT.md) para instrucciones detalladas.
 
 ## Estructura del proyecto
 
